@@ -1,0 +1,10 @@
+automation.*:
+  extra_data_template: >
+    var t = attributes.last_triggered;
+    if (t === null) {
+      return '尚未触发';
+    } else {
+      var tt = new Date(t);
+      return '上次触发：'+ (tt.getMonth()+1) + '月' + tt.getDate() + '日 ' + tt.getHours() + ':' + (tt.getMinutes() < 10 ? ('0' + tt.getMinutes()) : tt.getMinutes());
+    }
+  custom_ui_state_card: state-card-custom-ui

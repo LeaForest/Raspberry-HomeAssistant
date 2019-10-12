@@ -1,0 +1,8 @@
+{
+  "domain": "modbus2",
+  "name": "ModBus2",
+  "documentation": "https://github.com/Yonsm/HAExtra",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@Yonsm"]
+}

@@ -1,0 +1,296 @@
+default_view:
+  view: yes
+  icon: mdi:home-assistant
+  entities:
+    # - device_tracker.xphone
+    # - device_tracker.yphone
+    # - device_tracker.zphone
+    - sensor.balcony_pm25
+    - sensor.aircat_pm25
+    - sensor.purifier7_pm25
+    - sensor.purifier7_co2
+    - sensor.fresher_co2
+    - group.parlor
+    - group.diningroom
+    #- group.kitchen
+    - group.hallway
+    - group.passage
+    - group.washroom
+    - group.bedroom
+    - group.parents
+    - group.kids
+    - group.study
+    - group.balcony
+    #- group.outside
+
+Parlor:
+  entities:
+    - light.parlor_light
+    #- light.parlor_light2
+    - light.parlor_spotlight
+    - media_player.x9400e
+    #- media_player.magic
+    - climate.daikin2
+    - climate.saswell
+    #- fan.wall_fan
+    - fan.fresher
+    - sensor.fresher_temperature
+    - sensor.fresher_humidity
+    - sensor.fresher_pm25
+    #- sensor.fresher_co2
+
+Diningroom:
+  entities:
+    - light.diningroom_light
+    #- light.diningroom_light2
+    - light.diningroom_spotlight
+    - switch.outlet
+    - light.gateway_light_34ce0090901a
+    - fan.purifier5
+    - climate.daikin1
+    - climate.saswell2
+    - sensor.illumination_34ce0090901a
+    - sensor.aircat_temperature
+    - sensor.aircat_humidity
+    #- sensor.aircat_pm25
+    - sensor.aircat_hcho
+    - binary_sensor.door_window_sensor_158d0001f3d2d1
+
+Hallway:
+  entities:
+    - light.hallway_light
+    - light.hallway_spotlight
+    - binary_sensor.door_window_sensor_158d0001f3e5be
+
+Passage:
+  entities:
+    - light.passage_light
+    - light.passage_spotlight
+    #- light.study_light2
+    - light.passage_backlight
+    - switch.storage
+    - binary_sensor.motion_sensor_158d0001d66ce9
+    # - binary_sensor.lightness
+    - input_text.miai
+
+Washroom:
+  entities:
+    - light.washroom_light
+    - switch.washroom_fan
+    - binary_sensor.motion_sensor_158d0001f4a238
+
+Bedroom:
+  entities:
+    #- media_player.x9300d
+    - climate.daikin3
+    - fan.fresher2
+    - fan.purifier7
+    - sensor.purifier7_temperature
+    - sensor.purifier7_humidity
+    #- sensor.purifier7_pm25
+    #- sensor.purifier7_co2
+    #- sensor.purifier7_hcho
+    - sensor.fresher2_temperature
+    - sensor.fresher2_humidity
+    - sensor.fresher2_pm25
+    - sensor.fresher2_co2
+
+Parents:
+  entities:
+    - fan.purifier
+    - sensor.purifier_temperature
+    - sensor.purifier_humidity
+    - sensor.purifier_pm25
+
+Kids:
+  entities:
+    - light.lamp
+    - light.kids_light
+    - climate.daikin4
+    #- fan.fan
+    - fan.purifier6
+    - sensor.purifier6_temperature
+    - sensor.purifier6_humidity
+    - sensor.purifier6_pm25
+    - sensor.purifier6_co2
+
+Study:
+  entities:
+    - light.study_light
+    #- light.airer_light
+    - cover.study_cover
+    #- cover.airer
+    - switch.projector
+    - switch.speaker
+    - switch.mitsubishi
+    - vacuum.vacuum
+    - fan.purifier4
+    - sensor.aircat2_temperature
+    - sensor.aircat2_humidity
+    - sensor.aircat2_pm25
+    - sensor.aircat2_hcho
+    #- sensor.purifier4_co2
+    - sensor.study_lightness
+
+Balcony:
+  entities:
+    - light.balcony_light
+    - binary_sensor.door_window_sensor_158d000228a52b
+    - sensor.balcony_temperature
+    - sensor.balcony_humidity
+    #- sensor.balcony_pm25
+    - weather.caiyun
+    - sun.sun
+
+Controls:
+  view: yes
+  icon: mdi:set-center
+  entities:
+    - group.all_lights
+    - group.all_switches
+    - group.all_fans
+    - group.all_vacuum_cleaners
+    #- media_player.x9300d
+    - media_player.x9400e
+    - climate.saswell
+    - climate.saswell2
+    - climate.daikin1
+    - climate.daikin2
+    - climate.daikin3
+    - climate.daikin4
+
+Automations:
+  view: yes
+  icon: mdi:robot
+  entities:
+    - group.all_automations
+    - group.all_scripts
+
+TParlor:
+  view: yes
+  entities:
+    - light.parlor_light
+    #- light.parlor_light2
+    - light.parlor_spotlight
+    - media_player.x9400e
+    #- media_player.magic
+    - climate.daikin2
+    - climate.saswell
+    #- fan.wall_fan
+    - fan.fresher
+    - sensor.fresher_temperature
+    - sensor.fresher_humidity
+    - sensor.fresher_pm25
+    - sensor.fresher_co2
+
+TDiningroom:
+  view: yes
+  entities:
+    - light.diningroom_light
+    #- light.diningroom_light2
+    - light.diningroom_spotlight
+    - switch.outlet
+    - light.gateway_light_34ce0090901a
+    - fan.purifier5
+    - climate.daikin1
+    - climate.saswell2
+    - sensor.illumination_34ce0090901a
+    - sensor.aircat_temperature
+    - sensor.aircat_humidity
+    - sensor.aircat_pm25
+    - sensor.aircat_hcho
+    - binary_sensor.door_window_sensor_158d0001f3d2d1
+
+THallway:
+  view: yes
+  entities:
+    - light.hallway_light
+    - light.hallway_spotlight
+    - binary_sensor.door_window_sensor_158d0001f3e5be
+
+TPassage:
+  view: yes
+  entities:
+    - light.passage_light
+    - light.passage_spotlight
+    #- light.study_light2
+    - light.passage_backlight
+    - switch.storage
+    - binary_sensor.motion_sensor_158d0001d66ce9
+    # - binary_sensor.lightness
+    - input_text.miai
+
+TWashroom:
+  view: yes
+  entities:
+    - light.washroom_light
+    - switch.washroom_fan
+    - binary_sensor.motion_sensor_158d0001f4a238
+
+TBedroom:
+  view: yes
+  entities:
+    - media_player.x9300d
+    - climate.daikin3
+    - fan.fresher2
+    - fan.purifier7
+    - sensor.purifier7_temperature
+    - sensor.purifier7_humidity
+    - sensor.purifier7_pm25
+    - sensor.purifier7_co2
+    - sensor.purifier7_hcho
+    - sensor.fresher2_temperature
+    - sensor.fresher2_humidity
+    - sensor.fresher2_pm25
+    - sensor.fresher2_co2
+
+TParents:
+  view: yes
+  entities:
+    - fan.purifier
+    - sensor.purifier_temperature
+    - sensor.purifier_humidity
+    - sensor.purifier_pm25
+
+TKids:
+  view: yes
+  entities:
+    - light.lamp
+    - light.kids_light
+    - climate.daikin4
+    #- fan.fan
+    - fan.purifier6
+    - sensor.purifier6_temperature
+    - sensor.purifier6_humidity
+    - sensor.purifier6_pm25
+    - sensor.purifier6_co2
+
+TStudy:
+  view: yes
+  entities:
+    - light.study_light
+    #- light.airer_light
+    - cover.study_cover
+    #- cover.airer
+    - switch.projector
+    - switch.speaker
+    - switch.mitsubishi
+    - vacuum.vacuum
+    - fan.purifier4
+    - sensor.aircat2_temperature
+    - sensor.aircat2_humidity
+    - sensor.aircat2_pm25
+    - sensor.aircat2_hcho
+    #- sensor.purifier4_co2
+    - sensor.study_lightness
+
+TBalcony:
+  view: yes
+  entities:
+    - light.balcony_light
+    - binary_sensor.door_window_sensor_158d000228a52b
+    - sensor.balcony_temperature
+    - sensor.balcony_humidity
+    - sensor.balcony_pm25
+    - weather.caiyun
+    - sun.sun

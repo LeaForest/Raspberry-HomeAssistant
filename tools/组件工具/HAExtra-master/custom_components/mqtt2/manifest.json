@@ -1,0 +1,8 @@
+{
+  "domain": "mqtt2",
+  "name": "MQTT2",
+  "documentation": "https://github.com/Yonsm/HAExtra",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@Yonsm"]
+}

@@ -1,0 +1,8 @@
+{
+  "domain": "caiyun",
+  "name": "CaiYun",
+  "documentation": "https://github.com/Yonsm/HAExtra",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@Yonsm"]
+}

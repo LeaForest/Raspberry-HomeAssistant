@@ -1,0 +1,44 @@
+force_send:
+  description: 强制播放当前内容，会清空播放队列。{"message":"hello","miai_num":"0"}
+  fields:
+    miai_num:
+      description: 指定播放声音的音箱,从0开始(可选参数,默认为0).
+      example: '0'
+    message:
+      description: TTS内容.
+      example: '您好，米爱'
+
+send:
+  description: 将内容添加至播放队列，按序播放。{"message":"hello","miai_num":"0","wait_time":"3"}
+  fields:
+    miai_num:
+      description: 指定播放声音的音箱,从0开始(可选参数,默认为0).
+      example: '0'
+    wait_time:
+      description: 指定该语句播报完毕之后额外等待时间，单位为秒(可选参数,默认为0).
+      example: '0'
+    message:
+      description: TTS内容.
+      example: '您好，米爱'
+
+set_vol:
+  description: 小爱同学音量调节.{"vol":50}
+  fields:
+    miai_num:
+      description: 指定调节音量的音箱,从0开始(可选参数,默认为0).
+      example: '0'
+    vol:
+      description: 指定音量.
+      example: '50'
+play:
+  description: 小爱同学播放.
+  fields:
+    miai_num:
+      description: 指定播放的音箱,从0开始(可选参数,默认为0).
+      example: '0'
+pause:
+  description: 小爱同学暂停.
+  fields:
+    miai_num:
+      description: 指定暂停的音箱,从0开始(可选参数,默认为0).
+      example: '0'

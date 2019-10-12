@@ -1,0 +1,67 @@
+#
+turn_on_projector:
+  alias: 打开投影仪
+  sequence:
+    - service: automation.turn_off
+      entity_id: automation.study_switch_dbclicked
+    - service: switch.turn_on
+      entity_id: switch.projector_power
+    - delay: 2
+    - service: switch.turn_on
+      entity_id: switch.benq
+    - service: switch.turn_on
+      entity_id: switch.himedia
+    - service: cover.close_cover
+      entity_id: cover.study_cover
+    #- service: cover.close_cover
+    #  entity_id: cover.airer
+    - service: fan.turn_on
+      entity_id: fan.purifier
+    - service: fan.set_speed
+      data:
+        entity_id: fan.purifier
+        speed: auto
+    - service: switch.turn_on
+      entity_id: switch.speaker
+    #- service: light.turn_off
+    #  entity_id: light.airer_light
+    - service: light.turn_off
+      entity_id: light.study_light
+    - delay: 2
+    - service: switch.turn_on
+      entity_id: switch.benq
+    - service: automation.turn_on
+      entity_id: automation.study_switch_dbclicked
+    - condition: numeric_state
+      entity_id: sensor.purifier_temperature
+      above: 28
+    - service: switch.turn_on
+      entity_id: switch.mitsubishi
+
+#
+turn_off_projector:
+  alias: 关闭投影仪
+  sequence:
+    - service: automation.turn_off
+      entity_id: automation.study_switch_dbclicked
+    - service: switch.turn_off
+      entity_id: switch.benq
+    - service: switch.turn_off
+      entity_id: switch.himedia
+    - service: cover.open_cover
+      entity_id: cover.study_cover
+    - service: mqtt.publish
+      data:
+        topic: NodeMCU3/relay/0/set
+        payload: 'off'
+    - service: switch.turn_off
+      entity_id: switch.benq
+    - service_template: "{% if is_state('sun.sun', 'below_horizon') %}light.turn_on{% else %}light.turn_off{% endif %}"
+      entity_id: light.study_light
+    - service: switch.turn_off
+      entity_id: switch.mitsubishi
+    - delay: 250
+    - service: switch.turn_off
+      entity_id: switch.projector_power
+    - service: automation.turn_on
+      entity_id: automation.study_switch_dbclicked

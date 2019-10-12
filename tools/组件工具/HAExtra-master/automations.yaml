@@ -1,0 +1,1178 @@
+#  小爱音箱文本朗读
+- alias: MiAI Text To Speech
+  trigger:
+    - platform: state
+      entity_id: input_text.miai
+  action:
+    - condition: template
+      value_template: '{{ states("input_text.miai") != "unknown" and states("input_text.miai") != "" }}'
+    - service: hello_miai.send
+      data_template:
+        message: '{{ states("input_text.miai") }}'
+
+# 入户门开启
+# - alias: Entrance Door Opened
+# #   trigger:
+#     platform: state
+#     entity_id: binary_sensor.door_window_sensor_158d0001f3e5be
+#     from: 'off'
+#     to: 'on'
+#   action:
+#   - service: xiaomi_aqara.play_ringtone
+#     data:
+#       gw_mac: 34CE0090901A
+#       ringtone_id: 10001
+#       ringtone_vol:100
+
+#过道无线开关单击
+- alias: Passage Switch Clicked
+  trigger:
+    - platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: binary_sensor.switch_158d0001e59b33
+        click_type: single
+  action:
+    - service: hello_miai.send
+      data_template:
+        message: '阳台PM2.5为{{ states("sensor.balcony_pm25") }}，餐厅PM2.5为{{ states("sensor.aircat_pm25") }}，主卧PM2.5为{{ states("sensor.purifier7_pm25") }}。客厅二氧化碳浓度为{{ states("sensor.fresher_co2") }}，主卧二氧化碳浓度为{{ states("sensor.purifier7_co2") }}，儿童房二氧化碳浓度为{{ states("sensor.purifier6_co2") }}'
+
+# 过道无线开关双击
+- alias: Passage Switch DBClicked
+  trigger:
+    - platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: binary_sensor.switch_158d0001e59b33
+        click_type: double
+  action:
+    - service: hello_miai.send
+      data:
+        message: 晾衣机将于今晚定时开启烘干功能
+
+# 过道无线开关长按
+- alias: Passage Switch Pressed
+  trigger:
+    - platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: binary_sensor.switch_158d0001e59b33
+        click_type: long_click_press
+  action:
+    - service: automation.toggle
+      entity_id: automation.passage_light_on_day
+    - service: automation.toggle
+      entity_id: automation.passage_light_off_day
+    - service: automation.toggle
+      entity_id: automation.passage_light_off_brighten
+    - service: automation.toggle
+      entity_id: automation.passage_light_on_night
+    - service: automation.toggle
+      entity_id: automation.passage_light_off_night
+    - service: automation.toggle
+      entity_id: automation.passage_backlight_reaction
+    - service: hello_miai.send
+      data_template:
+        message: '过道灯自动感应功能已{% if is_state("automation.passage_backlight_reaction", "on") %}启用{% else %}暂停，所有灯光将在10秒后关闭{% endif %}'
+    - condition: state
+      entity_id: automation.passage_backlight_reaction
+      state: 'off'
+    - delay: '00:00:10'
+    - service: homeassistant.turn_off
+      entity_id: group.all_lights
+    - service: automation.turn_on
+      entity_id: automation.passage_light_reaction_enabler
+
+# 过道灯自动响应恢复
+- alias: Passage Light Reaction Enabler
+  initial_state: false
+  trigger:
+    - platform: time
+      at: '07:00:00'
+  action:
+    - service: automation.turn_on
+      entity_id: automation.passage_light_on_day
+    - service: automation.turn_on
+      entity_id: automation.passage_light_off_day
+    - service: automation.turn_on
+      entity_id: automation.passage_light_off_brighten
+    - service: automation.turn_on
+      entity_id: automation.passage_light_on_night
+    - service: automation.turn_on
+      entity_id: automation.passage_light_off_night
+    - service: automation.turn_on
+      entity_id: automation.passage_backlight_reaction
+    - service: hello_miai.send
+      data:
+        message: 过道灯自动感应功能已启用
+    - delay: '00:00:10'
+    - service: automation.turn_off
+      entity_id: automation.passage_light_reaction_enabler
+
+# 书房无线开关单击
+- alias: Study Switch Clicked
+  trigger:
+    - platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: binary_sensor.switch_158d000201a73f
+        click_type: single
+  action:
+    - service: mqtt.publish
+      data:
+        topic: NodeMCU3/relay/0/set
+        payload: toggle
+
+# 书房无线开关双击
+- alias: Study Switch DBClicked
+  trigger:
+    - platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: binary_sensor.switch_158d000201a73f
+        click_type: double
+  action:
+    - service: hello_miai.send
+      data_template:
+        message: '正在{% if is_state("switch.projector", "on") %}关闭{% else %}打开{% endif %}投影仪'
+    - service: switch.toggle
+      entity_id: switch.projector
+
+# 书房无线开关长按
+- alias: Study Switch Pressed
+  trigger:
+    - platform: event
+      event_type: xiaomi_aqara.click
+      event_data:
+        entity_id: binary_sensor.switch_158d000201a73f
+        click_type: long_click_press
+  action:
+    - service: mqtt.publish
+      data:
+        topic: NodeMCU3/relay/0/set
+        payload: 'off'
+
+# 阳台移门开合
+- alias: Balcony Door Toggled
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d000228a52b
+      from: 'off'
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d000228a52b
+      from: 'on'
+      to: 'off'
+  condition:
+    - condition: state
+      entity_id: sun.sun
+      state: below_horizon
+  action:
+    - service_template: '{% if trigger.to_state.state == "on" %}light.turn_on{% else %}light.turn_off{% endif %}'
+      entity_id: light.balcony_light
+
+# 阳台移门打开
+# - alias: Balcony Door Opened
+#   trigger:
+#     - platform: state
+#       entity_id: binary_sensor.door_window_sensor_158d000228a52b
+#       from: 'off'
+#       to: 'on'
+#       for:
+#         minutes: 5
+#   action:
+#     - service: climate.turn_off
+#       entity_id: climate.daikin2
+#     - service: climate.turn_off
+#       entity_id: climate.daikin1
+
+# 阳台移门关闭
+# - alias: Balcony Door Closed
+#   trigger:
+#     - platform: state
+#       entity_id: binary_sensor.door_window_sensor_158d000228a52b
+#       from: 'on'
+#       to: 'off'
+#   action:
+#     - service: fan.turn_on
+#       entity_id: fan.fresher
+
+# 洗手间灯感应开
+- alias: Washroom Light On
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.motion_sensor_158d0001f4a238
+      to: 'on'
+  condition:
+    # - condition: state
+    #   entity_id: light.washroom_light
+    #   state: 'off'
+    - condition: state
+      entity_id: sun.sun
+      state: below_horizon
+  action:
+    - service: light.turn_on
+      entity_id: light.washroom_light
+    - service: automation.turn_off
+      entity_id: automation.washroom_light_off
+    - service: automation.turn_on
+      entity_id: automation.washroom_light_off
+
+# 洗手间灯延迟关
+- alias: Washroom Light Off
+  initial_state: false
+  trigger:
+    - platform: time_pattern
+      minutes: '/3'
+  condition:
+    - condition: state
+      entity_id: binary_sensor.motion_sensor_158d0001f4a238
+      state: 'off'
+  action:
+    - service: light.turn_off
+      entity_id: light.washroom_light
+    - service: automation.turn_off
+      entity_id: automation.washroom_light_off
+
+# 过道灯白天感应开
+- alias: Passage Light On Day
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.motion_sensor_158d0001d66ce9
+      to: 'on'
+  action:
+    - service: mqtt.publish
+      data:
+        topic: Genie/WAKE
+        payload: 'ON'
+    - condition: time
+      after: '06:00'
+      before: '18:00'
+    - condition: numeric_state
+      entity_id: sensor.illumination_34ce0090901a
+      below: 300
+    - service: light.turn_on
+      entity_id: light.passage_light
+
+# 过道灯白天感应关
+- alias: Passage Light Off Day
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.motion_sensor_158d0001d66ce9
+      to: 'off'
+    - platform: state
+      entity_id: device_tracker.yphone
+      to: 'not_home'
+    - platform: state
+      entity_id: device_tracker.zphone
+      to: 'not_home'
+  condition:
+    - condition: time
+      after: '06:00'
+      before: '18:00'
+    - condition: state
+      entity_id: binary_sensor.motion_sensor_158d0001d66ce9
+      state: 'off'
+    - condition: state
+      entity_id: device_tracker.yphone
+      state: 'not_home'
+    - condition: state
+      entity_id: device_tracker.zphone
+      state: 'not_home'
+    - condition: state
+      entity_id: media_player.x9400e
+      state: 'off'
+  action:
+    - service: light.turn_off
+      entity_id: light.passage_light
+
+# 过道灯白天变亮关
+- alias: Passage Light Off Brighten
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.illumination_34ce0090901a
+      above: 400
+      for:
+        minutes: 10
+  condition:
+    - condition: time
+      after: '06:00'
+      before: '18:00'
+  action:
+    - service: light.turn_off
+      entity_id: light.passage_light
+
+# 过道灯晚上感应开
+- alias: Passage Light On Night
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.motion_sensor_158d0001d66ce9
+      from: 'off'
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d0001f3e5be
+      from: 'off'
+      to: 'on'
+  condition:
+    - condition: time
+      after: '18:00'
+      before: '21:30'
+  action:
+    - service: light.turn_on
+      entity_id: light.passage_light
+
+# 过道灯晚上感应关
+- alias: Passage Light Off Night
+  trigger:
+    - platform: time
+      at: '21:30:00'
+    - platform: state
+      entity_id: binary_sensor.motion_sensor_158d0001d66ce9
+      to: 'off'
+  condition:
+    - condition: time
+      after: '21:29'
+      before: '23:59'
+    - condition: state
+      entity_id: binary_sensor.motion_sensor_158d0001d66ce9
+      state: 'off'
+    - condition: state
+      entity_id: binary_sensor.motion_sensor_158d0001f4a238
+      state: 'off'
+    - condition: state
+      entity_id: media_player.x9400e
+      state: 'off'
+  action:
+    - service: light.turn_off
+      entity_id: light.passage_light
+
+# 过道背景灯感应开关
+- alias: Passage Backlight Reaction
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.motion_sensor_158d0001d66ce9
+      from: 'off'
+      to: 'on'
+  condition:
+    - condition: time
+      after: '21:30'
+      before: '06:00'
+    - condition: state
+      entity_id: light.passage_light
+      state: 'off'
+  # - condition: state
+  #   entity_id: light.passage_backlight
+  #   state: 'off'
+  action:
+    - service: light.turn_on
+      entity_id: light.passage_backlight
+    - wait_template: '{{ is_state("binary_sensor.motion_sensor_158d0001d66ce9", "off") }}'
+    - service: light.turn_off
+      entity_id: light.passage_backlight
+
+# 餐厅灯开关同步
+- alias: Diningroom Light Sync
+  trigger:
+    - platform: state
+      entity_id: light.diningroom_light2, light.diningroom_light
+  action:
+    - service_template: '{% if trigger.to_state.state == "on" %}light.turn_on{% else %}light.turn_off{% endif %}'
+      data_template:
+        entity_id: '{% if trigger.entity_id == "light.diningroom_light2" %}light.diningroom_light{% else %}light.diningroom_light2{% endif %}'
+
+# 客厅灯开关同步
+- alias: Parlor Light Sync
+  trigger:
+    - platform: state
+      entity_id: light.parlor_light2, light.parlor_light
+  action:
+    - service_template: '{% if trigger.to_state.state == "on" %}light.turn_on{% else %}light.turn_off{% endif %}'
+      data_template:
+        entity_id: '{% if trigger.entity_id == "light.parlor_light2" %}light.parlor_light{% else %}light.parlor_light2{% endif %}'
+
+# 过道灯开关同步
+- alias: Passage Light Sync
+  trigger:
+    - platform: state
+      entity_id: light.passage_light2, light.passage_light
+  action:
+    - service_template: '{% if trigger.to_state.state == "on" %}light.turn_on{% else %}light.turn_off{% endif %}'
+      data_template:
+        entity_id: '{% if trigger.entity_id == "light.passage_light2" %}light.passage_light{% else %}light.passage_light2{% endif %}'
+
+# 书房灯开关同步
+- alias: Study Light Sync
+  trigger:
+    - platform: state
+      entity_id: light.study_light2, light.study_light3, light.study_light
+  action:
+    - service_template: '{% if trigger.to_state.state == "on" %}light.turn_on{% else %}light.turn_off{% endif %}'
+      data_template:
+        entity_id: '{% if trigger.entity_id == "light.study_light2" %}light.study_light,light.study_light3{% elif trigger.entity_id == "light.study_light3" %}light.study_light,light.study_light2{% else %}light.study_light2,light.study_light3{% endif %}'
+
+# 阳台空气差
+- alias: Balcony Air Bad
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.balcony_pm25
+      above: 50
+      for:
+        minutes: 5
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d000228a52b
+      from: 'off'
+      to: 'on'
+      for:
+        seconds: 30
+  condition:
+    - condition: state
+      entity_id: binary_sensor.door_window_sensor_158d000228a52b
+      state: 'on'
+    - condition: time
+      after: '06:00'
+      before: '23:00'
+  action:
+    - service: hello_miai.send
+      data_template:
+        message: '阳台PM2.5为{% set PM25 = states.sensor.balcony_pm25.state | int %}{{ PM25 }}，{% if PM25 < 20 %}空气很好{% elif PM25 < 40 %}空气不错{% elif PM25 < 60 %}空气一般{% elif PM25 < 80 %}空气不好{% else %}空气污染，请关好门窗{% endif %}'
+
+# 阳台空气好
+- alias: Balcony Air Good
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.balcony_pm25
+      below: 20
+      for:
+        minutes: 10
+  condition:
+    - condition: time
+      after: '07:00'
+      before: '22:00'
+    - condition: state
+      entity_id: binary_sensor.door_window_sensor_158d000228a52b
+      state: 'off'
+    - condition: numeric_state
+      entity_id: sensor.balcony_temperature
+      above: 10
+      below: 30
+    - condition: or
+      conditions:
+        - condition: numeric_state
+          entity_id: sensor.aircat_pm25
+          above: 20
+        - condition: numeric_state
+          entity_id: sensor.fresher_co2
+          above: 800
+  action:
+    - service: hello_miai.send
+      data:
+        message: 外面空气很好，可以打开门窗
+
+# 室内空气警告
+- alias: Indoor Air Warning
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.aircat_pm25
+      above: 40
+    - platform: numeric_state
+      entity_id: sensor.fresher_co2
+      above: 900
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      above: 900
+    - platform: numeric_state
+      entity_id: sensor.aircat_hcho
+      above: 0.08
+  action:
+    - service: light.turn_on
+      data_template:
+        entity_id: light.gateway_light_34ce0090901a
+        color_name: '{% if states("sensor.fresher_co2") | int > 900 %}red{% elif states("sensor.purifier7_co2") | int > 900 %}purple{% elif states("sensor.aircat_hcho") | float > 0.08 %}green{% elif states("sensor.aircat_pm25") | int > 40 %}blue{% endif %}'
+        brightness: 10
+    - condition: time
+      after: '06:00'
+      before: '23:00'
+    - service: hello_miai.send
+      data_template:
+        message: '{% set PM25 = states.sensor.aircat_pm25.state | int %}{% if PM25 >= 40 %}PM2.5为{{ PM25 }}，空气不好。{% endif %}{% set CO2 = states.sensor.fresher_co2.state | int %}{% if CO2 >= 900 %}二氧化碳浓度为{{ CO2 }}，空气很闷。{% endif %}{% set HCHO = states.sensor.aircat_hcho.state | float %}{% if HCHO > 0.2 %}甲醛浓度为{{ HCHO }}，注意通风。{% endif %}'
+
+# 室内空气恢复
+- alias: Indoor Air Restored
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.aircat_pm25
+      below: 40
+    - platform: numeric_state
+      entity_id: sensor.fresher_co2
+      below: 900
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      below: 900
+    - platform: numeric_state
+      entity_id: sensor.aircat_hcho
+      below: 0.08
+  condition:
+    - condition: numeric_state
+      entity_id: sensor.aircat_pm25
+      below: 40
+    - condition: numeric_state
+      entity_id: sensor.fresher_co2
+      below: 900
+    - condition: numeric_state
+      entity_id: sensor.purifier7_co2
+      below: 900
+    - condition: numeric_state
+      entity_id: sensor.aircat_hcho
+      below: 0.08
+    - condition: state
+      entity_id: light.gateway_light_34ce0090901a
+      state: 'on'
+  action:
+    - service: light.turn_off
+      entity_id: light.gateway_light_34ce0090901a
+
+# 餐厅湿度过高
+- alias: Diningroom Humidity High
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.aircat_humidity
+      above: 72
+      for:
+        minutes: 10
+  action:
+    - service: switch.turn_on
+      entity_id: switch.outlet
+
+# 餐厅湿度正常
+- alias: Diningroom Humidity Normal
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.aircat_humidity
+      below: 68
+      for:
+        minutes: 10
+  action:
+    - service: switch.turn_off
+      entity_id: switch.outlet
+
+# 餐厅湿度过低
+- alias: Diningroom Humidity Low
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.purifier5_humidity
+      below: 52
+      for:
+        minutes: 10
+  action:
+    - service: fan.turn_on
+      entity_id: fan.purifier5
+    - service: fan.oscillate
+      data:
+        entity_id: fan.purifier5
+        oscillating: true
+
+# 主卧湿度过高
+- alias: Bedroom Humidity High
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.purifier7_humidity
+      above: 72
+      for:
+        minutes: 10
+  action:
+    - service: switch.turn_on
+      entity_id: switch.outlet2
+
+# 主卧湿度正常
+- alias: Bedroom Humidity Normal
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.purifier7_humidity
+      below: 68
+      for:
+        minutes: 10
+  action:
+    - service: switch.turn_off
+      entity_id: switch.outlet2
+
+# 主卧湿度过低
+- alias: Bedroom Humidity Low
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.purifier7_humidity
+      below: 52
+      for:
+        minutes: 10
+  action:
+    - service: fan.turn_on
+      entity_id: fan.purifier7
+    - service: fan.oscillate
+      data:
+        entity_id: fan.purifier7
+        oscillating: true
+
+# 儿童房湿度过低
+- alias: Kids Humidity Low
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.purifier6_humidity
+      below: 52
+      for:
+        minutes: 10
+  action:
+    - service: fan.turn_on
+      entity_id: fan.purifier6
+    - service: fan.oscillate
+      data:
+        entity_id: fan.purifier6
+        oscillating: true
+
+# 客厅二氧化碳变化
+- alias: Parlor CO2 Changed
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.fresher_co2
+      above: 730 # 升至高档
+      for:
+        minutes: 5
+    - platform: numeric_state
+      entity_id: sensor.fresher_co2
+      above: 680 # 升至中档
+      for:
+        minutes: 4
+    - platform: numeric_state
+      entity_id: sensor.fresher_co2
+      above: 600 # 升至低档
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.fresher_co2
+      below: 710 # 降至中档
+      for:
+        minutes: 5
+    - platform: numeric_state
+      entity_id: sensor.fresher_co2
+      below: 660 # 降至低档
+      for:
+        minutes: 4
+    - platform: numeric_state
+      entity_id: sensor.fresher_co2
+      below: 500 # 降至关机
+      for:
+        minutes: 6
+  action:
+    - service_template: '{% if (states("sensor.fresher_co2") | int > 500) %}fan.turn_on{% else %}fan.turn_off{% endif %}'
+      entity_id: fan.fresher
+    - condition: numeric_state
+      entity_id: sensor.fresher_co2
+      above: 500
+    - service: fan.set_speed
+      data_template:
+        entity_id: fan.fresher
+        speed: '{% if (states("sensor.fresher_co2") | int > 730) %}strong{% elif (states("sensor.fresher_co2") | int > 680) %}middle{% else %}auto{% endif %}'
+    - delay: 1
+    - service: logbook.log
+      data_template:
+        name: '{{ state_attr("sensor.fresher_co2", "friendly_name") }}={{ states("sensor.fresher_co2") }}'
+        message: '{{ state_attr("fan.fresher", "friendly_name") }}⇒{{ state_attr("fan.fresher", "speed") }}'
+
+# 主卧二氧化碳变化
+- alias: Bedroom CO2 Changed
+  trigger:
+    - platform: time
+      at: '07:30:01'
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      above: 730 # 升至高档
+      for:
+        minutes: 5
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      above: 680 # 升至中档
+      for:
+        minutes: 4
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      above: 600 # 升至低档
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      below: 710 # 降至中档
+      for:
+        minutes: 5
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      below: 660 # 降至低档
+      for:
+        minutes: 4
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      below: 500 # 降至关机
+      for:
+        minutes: 6
+  condition:
+    - condition: time
+      after: '7:30'
+      before: '21:29'
+  action:
+    - service_template: '{% if (states("sensor.purifier7_co2") | int > 500) %}fan.turn_on{% else %}fan.turn_off{% endif %}'
+      entity_id: fan.fresher2
+    - condition: numeric_state
+      entity_id: sensor.purifier7_co2
+      above: 500
+    - service: fan.set_speed
+      data_template:
+        entity_id: fan.fresher2
+        speed: '{% if (states("sensor.purifier7_co2") | int > 730) %}strong{% elif (states("sensor.purifier7_co2") | int > 680) %}middle{% else %}auto{% endif %}'
+    - delay: 1
+    - service: logbook.log
+      data_template:
+        name: '{{ state_attr("sensor.purifier7_co2", "friendly_name") }}={{ states("sensor.purifier7_co2") }}'
+        message: '{{ state_attr("fan.fresher2", "friendly_name") }}⇒{{ state_attr("fan.fresher2", "speed") }}'
+
+# 主卧睡眠时二氧化碳变化
+- alias: Bedroom CO2 Changed On Sleeping
+  trigger:
+    - platform: time
+      at: '00:00:01'
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      above: 1000 # 升至高档
+      for:
+        minutes: 5
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      above: 750 # 升至中档
+      for:
+        minutes: 4
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      above: 600 # 升至低档
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      below: 900 # 降至中档
+      for:
+        minutes: 5
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      below: 720 # 降至低档
+      for:
+        minutes: 4
+    - platform: numeric_state
+      entity_id: sensor.purifier7_co2
+      below: 500 # 降至关机
+      for:
+        minutes: 6
+  condition:
+    - condition: time
+      after: '0:00'
+      before: '7:29'
+  action:
+    - service_template: '{% if (states("sensor.purifier7_co2") | int > 500) %}fan.turn_on{% else %}fan.turn_off{% endif %}'
+      entity_id: fan.fresher2
+    - condition: numeric_state
+      entity_id: sensor.purifier7_co2
+      above: 500
+    - service: fan.set_speed
+      data_template:
+        entity_id: fan.fresher2
+        speed: '{% if (states("sensor.purifier7_co2") | int > 1000) %}strong{% elif (states("sensor.purifier7_co2") | int > 750) %}middle{% else %}auto{% endif %}'
+    - delay: 1
+    - service: logbook.log
+      data_template:
+        name: '{{ state_attr("sensor.purifier7_co2", "friendly_name") }}={{ states("sensor.purifier7_co2") }}'
+        message: '{{ state_attr("fan.fresher2", "friendly_name") }}⇒{{ state_attr("fan.fresher2", "speed") }}'
+
+# 餐厅颗粒物变化
+- alias: Diningroom PM25 Changed
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.aircat_pm25
+      above: 50
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.aircat_pm25
+      above: 20
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.aircat_pm25
+      above: 13
+      for:
+        minutes: 8
+    - platform: numeric_state
+      entity_id: sensor.aircat_pm25
+      below: 30
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.aircat_pm25
+      below: 15
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.aircat_pm25
+      below: 10
+      for:
+        minutes: 8
+  action:
+    - service_template: '{% if (states("sensor.aircat_pm25") | int > 10) %}fan.turn_on{% else %}fan.turn_off{% endif %}'
+      entity_id: fan.purifier5
+    - condition: numeric_state
+      entity_id: sensor.aircat_pm25
+      above: 10
+    - service: fan.set_speed
+      data_template:
+        entity_id: fan.purifier5
+        speed: '{% if (states("sensor.aircat_pm25") | int > 50) %}high{% elif (states("sensor.aircat_pm25") | int > 20) %}medium{% else %}low{% endif %}'
+    - delay: 1
+    - service: logbook.log
+      data_template:
+        name: '{{ state_attr("sensor.aircat_pm25", "friendly_name") }}={{ states("sensor.aircat_pm25") }}'
+        message: '{{ state_attr("fan.purifier5", "friendly_name") }}⇒{{ state_attr("fan.purifier5", "speed") }}'
+
+# 主卧颗粒物变化
+- alias: Bedroom PM25 Changed
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.purifier7_pm25
+      above: 50
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.purifier7_pm25
+      above: 20
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.purifier7_pm25
+      above: 10
+      for:
+        minutes: 8
+    - platform: numeric_state
+      entity_id: sensor.purifier7_pm25
+      below: 35
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.purifier7_pm25
+      below: 15
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.purifier7_pm25
+      below: 5
+      for:
+        minutes: 8
+  action:
+    - service_template: '{% if (states("sensor.purifier7_pm25") | int > 5) %}fan.turn_on{% else %}fan.turn_off{% endif %}'
+      entity_id: fan.purifier7
+    - condition: numeric_state
+      entity_id: sensor.purifier7_pm25
+      above: 5
+    - service: fan.set_speed
+      data_template:
+        entity_id: fan.purifier7
+        speed: '{% if (states("sensor.purifier7_pm25") | int > 50) and is_state("sun.sun", "above_horizon") %}high{% elif (states("sensor.purifier7_pm25") | int > 20) %}medium{% else %}low{% endif %}'
+    - delay: 1
+    - service: logbook.log
+      data_template:
+        name: '{{ state_attr("sensor.purifier7_pm25", "friendly_name") }}={{ states("sensor.purifier7_pm25") }}'
+        message: '{{ state_attr("fan.purifier7", "friendly_name") }}⇒{{ state_attr("fan.purifier7", "speed") }}'
+
+# 次卧颗粒物变化
+- alias: Parents PM25 Changed
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.purifier_pm25
+      above: 60
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.purifier_pm25
+      above: 40
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.purifier_pm25
+      above: 25
+      for:
+        minutes: 8
+    - platform: numeric_state
+      entity_id: sensor.purifier_pm25
+      below: 45
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.purifier_pm25
+      below: 32
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.purifier_pm25
+      below: 20
+      for:
+        minutes: 8
+  action:
+    - service_template: '{% if (states("sensor.purifier_pm25") | int > 20) %}fan.turn_on{% else %}fan.turn_off{% endif %}'
+      entity_id: fan.purifier
+    - condition: numeric_state
+      entity_id: sensor.purifier_pm25
+      above: 20
+    - service: fan.set_speed
+      data_template:
+        entity_id: fan.purifier
+        speed: '{% if (states("sensor.purifier_pm25") | int > 35) and is_state("switch.projector", "off") %}favorite{% else %}auto{% endif %}'
+    - service: fan.xiaomi_miio_set_favorite_level
+      data_template:
+        entity_id: fan.purifier
+        level: '{% if (states("sensor.purifier_pm25") | int > 50) and is_state("sun.sun", "above_horizon") %}9{% else %}6{% endif %}'
+    - delay: 1
+    - service: logbook.log
+      data_template:
+        name: '{{ state_attr("sensor.purifier_pm25", "friendly_name") }}={{ states("sensor.purifier_pm25") }}'
+        message: '{{ state_attr("fan.purifier", "friendly_name") }}⇒{{ state_attr("fan.purifier", "speed") }} {{ state_attr("fan.purifier", "favorite_level") }}'
+
+# 儿童房颗粒物变化
+- alias: Kids PM25 Changed
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.purifier6_pm25
+      above: 50
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.purifier6_pm25
+      above: 20
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.purifier6_pm25
+      above: 10
+      for:
+        minutes: 8
+    - platform: numeric_state
+      entity_id: sensor.purifier6_pm25
+      below: 35
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.purifier6_pm25
+      below: 15
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.purifier6_pm25
+      below: 5
+      for:
+        minutes: 8
+  action:
+    - service_template: '{% if (states("sensor.purifier6_pm25") | int > 5) %}fan.turn_on{% else %}fan.turn_off{% endif %}'
+      entity_id: fan.purifier6
+    - condition: numeric_state
+      entity_id: sensor.purifier6_pm25
+      above: 5
+    - service: fan.set_speed
+      data_template:
+        entity_id: fan.purifier6
+        speed: '{% if (states("sensor.purifier6_pm25") | int > 50) and is_state("sun.sun", "above_horizon") %}high{% elif (states("sensor.purifier6_pm25") | int > 20) %}medium{% else %}low{% endif %}'
+    - delay: 1
+    - service: logbook.log
+      data_template:
+        name: '{{ state_attr("sensor.purifier6_pm25", "friendly_name") }}={{ states("sensor.purifier6_pm25") }}'
+        message: '{{ state_attr("fan.purifier6", "friendly_name") }}⇒{{ state_attr("fan.purifier6", "speed") }}'
+
+# 书房颗粒物变化
+- alias: Study PM25 Changed
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.aircat2_pm25
+      above: 50
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.aircat2_pm25
+      above: 20
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.aircat2_pm25
+      above: 13
+      for:
+        minutes: 8
+    - platform: numeric_state
+      entity_id: sensor.aircat2_pm25
+      below: 30
+      for:
+        minutes: 7
+    - platform: numeric_state
+      entity_id: sensor.aircat2_pm25
+      below: 15
+      for:
+        minutes: 6
+    - platform: numeric_state
+      entity_id: sensor.aircat2_pm25
+      below: 10
+      for:
+        minutes: 8
+  action:
+    - service_template: '{% if (states("sensor.aircat2_pm25") | int > 10) %}fan.turn_on{% else %}fan.turn_off{% endif %}'
+      entity_id: fan.purifier4
+    - condition: numeric_state
+      entity_id: sensor.aircat2_pm25
+      above: 10
+    - service: fan.set_speed
+      data_template:
+        entity_id: fan.purifier4
+        speed: '{% if (states("sensor.aircat2_pm25") | int > 50) and is_state("sun.sun", "above_horizon") %}high{% elif (states("sensor.aircat2_pm25") | int > 30) %}medium{% else %}low{% endif %}'
+    - delay: 1
+    - service: logbook.log
+      data_template:
+        name: '{{ state_attr("sensor.aircat2_pm25", "friendly_name") }}={{ states("sensor.aircat2_pm25") }}'
+        message: '{{ state_attr("fan.purifier4", "friendly_name") }}⇒{{ state_attr("fan.purifier4", "speed") }}'
+
+# 睡眠自动化
+- alias: Sleeping Began
+  trigger:
+    - platform: time
+      at: '20:30:00'
+  action:
+    - service: cover.close_cover
+      entity_id: cover.study_cover
+    - service: fan.set_speed
+      data:
+        entity_id: fan.fresher2
+        speed: auto
+    - service: fan.xiaomi_miio_set_led_brightness
+      data:
+        entity_id: fan.fresher
+        brightness: 2
+    - service: fan.xiaomi_miio_set_led_brightness
+      data:
+        entity_id: fan.fresher2
+        brightness: 2
+    # - service: climate.turn_off
+    #   entity_id: climate.daikin1
+    # - service: climate.turn_off
+    #   entity_id: climate.daikin2
+    # - service: climate.set_fan_mode
+    #   data:
+    #     entity_id: climate.daikin3
+    #     fan_mode: 一级
+    # - service: climate.set_fan_mode
+    #   data:
+    #     entity_id: climate.daikin4
+    #     fan_mode: 一级
+
+# 睡眠自动化
+- alias: Sleeping Ended
+  trigger:
+    - platform: time
+      at: '07:00:00'
+  action:
+    - service: cover.open_cover
+      entity_id: cover.study_cover
+    - service: fan.xiaomi_miio_set_led_brightness
+      data:
+        entity_id: fan.fresher
+        brightness: 0
+    - service: fan.xiaomi_miio_set_led_brightness
+      data:
+        entity_id: fan.fresher2
+        brightness: 0
+    # - service: climate.set_fan_mode
+    #   data:
+    #     entity_id: climate.daikin3
+    #     fan_mode: 自动
+    # - service: climate.set_fan_mode
+    #   data:
+    #     entity_id: climate.daikin4
+    #     fan_mode: 自动
+
+# # 主卧温度高
+# - alias: Bedroom Temperature High
+#   initial_state: false
+#   trigger:
+#     - platform: numeric_state
+#       entity_id: sensor.purifier7_temperature
+#       above: 21.8
+#       for:
+#         minutes: 10
+#   condition:
+#     - condition: or
+#       conditions:
+#         - condition: time
+#           after: '00:00'
+#           before: '08:00'
+#         - condition: state
+#           entity_id: device_tracker.yphone
+#           state: 'home'
+#         - condition: state
+#           entity_id: device_tracker.zphone
+#           state: 'home'
+#   action:
+#     - service: climate.turn_on
+#       entity_id: climate.daikin3
+#     - service: climate.set_temperature
+#       data:
+#         entity_id: climate.daikin3
+#         temperature: 26
+#         operation_mode: cool
+
+# # 主卧温度低
+# - alias: Bedroom Temperature Low
+#   initial_state: false
+#   trigger:
+#     - platform: numeric_state
+#       entity_id: sensor.purifier7_temperature
+#       below: 21
+#       for:
+#         minutes: 5
+#   # condition:
+#   # - condition: numeric_state
+#   #   entity_id: sensor.balcony_temperature
+#   #   below: 32
+#   action:
+#     - service: climate.turn_off
+#       entity_id: climate.daikin3
+
+# 书房亮度太高
+- alias: Study Lightness High
+  trigger:
+    - platform: time
+      at: '12:30:00'
+    - platform: numeric_state
+      entity_id: sensor.study_lightness
+      above: 180
+      for:
+        minutes: 10
+  condition:
+    - condition: numeric_state
+      entity_id: sensor.study_lightness
+      above: 180
+    - condition: time
+      after: '12:00'
+      before: '16:00'
+  action:
+    - service: cover.close_cover
+      entity_id: cover.study_cover
+
+# 书房亮度正常
+- alias: Study Lightness Normal
+  trigger:
+    - platform: time
+      at: '16:00:00'
+  condition:
+    - condition: state
+      entity_id: cover.study_cover
+      state: closed
+    - condition: state
+      entity_id: switch.projector
+      state: 'off'
+  action:
+    - service: cover.open_cover
+      entity_id: cover.study_cover

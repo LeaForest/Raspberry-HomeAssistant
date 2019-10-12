@@ -1,0 +1,8 @@
+{
+  "domain": "saswell",
+  "name": "SasWell",
+  "documentation": "https://github.com/Yonsm/HAExtra",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@Yonsm"]
+}

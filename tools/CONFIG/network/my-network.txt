@@ -1,0 +1,19 @@
+[connection]
+id=hassos-network
+uuid=72111c67-4a5d-4d5c-925e-f8ee26efb3c3
+type=802-11-wireless
+
+[802-11-wireless]
+mode=infrastructure
+ssid=Home Assistant    #  你的SSID
+ 
+[802-11-wireless-security]
+auth-alg=open
+key-mgmt=wpa-psk
+psk=Home123456        # 你的无线密码
+[ipv4]
+method=auto
+
+[ipv6]
+addr-gen-mode=stable-privacy
+method=auto

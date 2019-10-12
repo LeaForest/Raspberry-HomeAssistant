@@ -1,0 +1,44 @@
+configurator:
+{
+  "username": "nicdo",
+  "password": "gcn519529043026",
+  "certfile": "fullchain.pem",
+  "keyfile": "privkey.pem",
+  "ssl": false,
+  "allowed_networks": [
+    "192.168.0.0/16",
+    "172.30.0.0/16"
+  ],
+  "banned_ips": [
+    "8.8.8.8"
+  ],
+  "banlimit": 0,
+  dirsfirst": false,
+  "enforce_basepath": false,
+  "ignore_pattern": [
+    "__pycache__"
+  ]
+}
+
+Samba:
+{
+  "workgroup": "WORKGROUP",
+  "name": "hassio",
+  "guest": false,
+  "map": {
+    "config": true,
+    "addons": true,
+    "ssl": false,
+    "share": true,
+    "backup": true
+  },
+  "username": "nicdo",
+  "password": "yuhan123456",
+  "interface": "wlan0",
+  "allow_hosts": [
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16"
+  ]
+}
+

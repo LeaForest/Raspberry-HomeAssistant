@@ -1,0 +1,132 @@
+      name: Demo Floorplan
+      image: /local/custom_ui/floorplan/floorplan.svg
+      stylesheet: /local/custom_ui/floorplan/floorplan.css
+
+      # These options are optional
+      warnings:                  # enable warnings (to find out why things might ot be working correctly)
+      # pan_zoom:                  # enable experimental panning / zooming
+      # hide_app_toolbar:          # hide the application toolbar (when used as a custom panel)
+      # date_format: DD-MMM-YYYY   # Date format to use in hover-over text
+
+      # last_motion_entity: sensor.template_last_motion
+      # last_motion_class: last-motion
+
+      groups:
+
+        - name: Sensors
+          entities:
+             - sensor.temperature_158d0001141e1a
+             - sensor.temperature_158d0001145a31
+             - sensor.temperature_158d0000fc469b
+             - sensor.temperature_158d0000e8a4a3
+             - sensor.temperature_158d0001145abc
+          # text_template: '${entity.state ? entity.state : "unknown"}'
+          # An example of rounding up a number, i.e. a temperature of 90.1 becomes 91
+          text_template: '${entity.state ? Math.ceil(entity.state) : "undefined"}${entity.attributes.unit_of_measurement}'
+          class_template: '
+            var temp = parseFloat(entity.state);
+            if (temp < 15)
+              return "temp-low";
+            else if (temp < 30)
+              return "temp-medium";
+            else
+              return "temp-high";
+            '
+        - name: Sensors
+          entities:
+             - sensor.humidity_158d0001141e1a
+             - sensor.humidity_158d0001145a31
+             - sensor.humidity_158d0000fc469b
+             - sensor.humidity_158d0000e8a4a3
+             - sensor.humidity_158d0001145abc
+          # text_template: '${entity.state ? entity.state : "unknown"}'
+          # An example of rounding up a number, i.e. a temperature of 90.1 becomes 91
+          text_template: '${entity.state ? Math.ceil(entity.state) : "undefined"}${entity.attributes.unit_of_measurement}'
+          class_template: '
+            var humidity = parseFloat(entity.state);
+            if (humidity < 45)
+              return "humidity-low";
+            else if (humidity < 65)
+              return "humidity-medium";
+            else
+              return "humidity-high";
+            '
+        - name: Lights
+          entities:
+             - switch.plug_158d0000fa791f
+             - switch.wall_switch_right_158d00010ee515
+             - switch.wall_switch_right_158d000118fe75
+             - switch.plug_158d0000fd5ee1
+             - switch.wall_switch_left_158d00010ee515
+             - switch.wall_switch_left_158d000118fe75
+             - switch.plug_158d0001016ea4
+             - switch.wall_switch_158d00010c026c
+             - switch.plug_158d0000fd5ab1
+             - switch.wall_switch_158d00010b711d
+             - switch.plug_158d00010e199d
+             - switch.plug_158d0000fa472b
+             - switch.plug_158d0000fa7955
+             - switch.wall_switch_158d00010c2333
+             - switch.plug_158d0000fbc0c2
+             - switch.wall_switch_right_158d000118fef8
+             - switch.wall_switch_left_158d000118fef8
+             - switch.wall_switch_158d00010c240e
+             - switch.plug_158d0000fa99c6
+             - switch.wall_switch_158d00010c24c1
+          states:
+            - state: 'on'
+              class: 'light-on'
+            - state: 'off'
+              class: 'light-off'
+          action:
+            domain: homeassistant   # This optional parameter allows you to use other services such as homeassistant.toggle like here.
+            service: toggle
+
+        - name: Binary sensors
+          entities:
+            - binary_sensor.motion_sensor_158d0000f702b0
+            - binary_sensor.motion_sensor_158d00010eefce
+            - binary_sensor.motion_sensor_158d0000ed68fc
+            - binary_sensor.motion_sensor_158d00010ef1b7
+            - binary_sensor.motion_sensor_158d0001010086
+            - binary_sensor.motion_sensor_158d0000fad19a
+          states:
+            - state: 'off'
+              class: 'default-background'
+            - state: 'on'
+              class: 'info-background'
+          state_transitions:
+            - name: On to off
+              from_state: 'on'
+              to_state: 'off'
+              duration: 10
+
+        - name: Binary sensors
+          entities:
+            - binary_sensor.door_window_sensor_158d0000eddcc7
+          states:
+            - state: 'off'
+              class: 'success-background'
+            - state: 'on'
+              class: 'danger-background'
+          state_transitions:
+            - name: On to off
+              from_state: 'on'
+              to_state: 'off'
+              duration: 10
+#        - name: thermostat_temp
+#          entities:
+#            - climate.downstairs
+#            - climate.upstairs
+#          text_template: '${entity.attributes.current_temperature ? entity.attributes.current_temperature : "undefined"}'
+#
+# The above text_template uses extended attributes from the climate.* objects to get current temperature.
+
+#        - name: text_states
+#          entities:
+#            - sensor.downstairs_thermostat_humidity
+#            - sensor.dark_sky_temperature
+#            - sensor.last_message
+#          text_template: '${entity.state ? entity.state.replace(/\s{2,}/g,"") : "undefined"}'
+#
+# The above text_template uses jQuery syntax to search and replace any instance of 2 consecutive (or more) spaces in a string of text.
